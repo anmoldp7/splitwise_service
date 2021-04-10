@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"splitwise.com/m/db"
+	"splitwise.com/m/dao"
 	"splitwise.com/m/model/transaction"
 	"splitwise.com/m/model/user"
 	"splitwise.com/m/utils"
@@ -35,7 +35,7 @@ func AddUser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	userID, isValid := db.AddUser(userData.Name, userData.Password, userData.Phone, userData.Email)
+	userID, isValid := dao.AddUser(userData.Name, userData.Password, userData.Phone, userData.Email)
 	if !isValid {
 		errMsg := userID
 		res := map[string]string{"error": errMsg}
@@ -68,7 +68,7 @@ func AddTransaction(w http.ResponseWriter, req *http.Request) {
 	var transactionData transaction.Transaction
 	json.NewDecoder(req.Body).Decode(&transactionData)
 
-	transactionID, isValid := db.AddDebt(transactionData.Lender, transactionData.Borrowers, transactionData.Amount)
+	transactionID, isValid := dao.AddDebt(transactionData.Lender, transactionData.Borrowers, transactionData.Amount)
 	if !isValid {
 		errMsg := transactionID
 		res := map[string]string{"error": errMsg}
@@ -102,7 +102,7 @@ func GetUserInfo(w http.ResponseWriter, req *http.Request) {
 
 	userID := req.FormValue("userID")
 
-	userInfo, isValid := db.GetUserDebtAndLoaned(userID)
+	userInfo, isValid := dao.GetUserDebtAndLoaned(userID)
 	if !isValid {
 		res := map[string]string{"error": "unprocessable entity"}
 		encodedRes, _ := json.Marshal(res)
