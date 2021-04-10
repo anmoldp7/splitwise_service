@@ -8,6 +8,8 @@ A barebones implementation of Splitwise backend using Golang and Postgresql.
 - The service should be able to receive transaction request with details about the lender, the amount and the group to which it is lent to.
 - The lendor and the group members must be registered users.
 - The service should be able to provide the amount lent and the amount owed for any particular user.
+- The service should be able to bulk insert transaction data in case amount lent is to be paid by multiple borrowers.
+- The service should be able to clear the amount owed between 2 users.
 
 ## Requirements
 
@@ -30,3 +32,5 @@ Also ensure that values are correctly setup in config file for connection with p
 - Set config values via environment variables.
 - Add API contract.
 - Add use case diagram, UML diagram, activity diagram and sequence diagram.
+- Implement endpoint to clear dues between 2 users.
+- Bulk insert transaction in case amount is to be paid by group to lender.
