@@ -1,7 +1,7 @@
 package transaction
 
 type Transaction struct {
-	Debtor string   `json:"debtor"`
-	Group  []string `json:"group"`
+	Lender string   `json:"lender"`
+	Borrowers  []string `json:"borrowers"`
 	Amount float64  `json:"amount"`
 }

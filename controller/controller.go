@@ -68,7 +68,7 @@ func AddTransaction(w http.ResponseWriter, req *http.Request) {
 	var transactionData transaction.Transaction
 	json.NewDecoder(req.Body).Decode(&transactionData)
 
-	transactionID, isValid := db.AddDebt(transactionData.Debtor, transactionData.Group, transactionData.Amount)
+	transactionID, isValid := db.AddDebt(transactionData.Lender, transactionData.Borrowers, transactionData.Amount)
 	if !isValid {
 		errMsg := transactionID
 		res := map[string]string{"error": errMsg}

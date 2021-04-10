@@ -59,32 +59,32 @@ func AddUser(name, password, phone, email string) (string, bool) {
 	return userID, true
 }
 
-func AddDebt(debtor string, debtees []string, amount float64) (string, bool) {
-	if !validateUser(debtor) {
-		return "invalid debtor service user ID", false
+func AddDebt(lender string, borrowers []string, amount float64) (string, bool) {
+	if !validateUser(lender) {
+		return "invalid lender service user ID", false
 	}
 
-	for _, debtee := range debtees {
-		if !validateUser(debtee) {
-			return fmt.Sprintf("invalid debtee ID: %s", debtee), false
+	for _, borrower := range borrowers {
+		if !validateUser(borrower) {
+			return fmt.Sprintf("invalid borrower ID: %s", borrower), false
 		}
 	}
-	debtAmount := amount / float64(len(debtees))
+	debtAmount := amount / float64(len(borrowers))
 	currentTime := time.Now()
 	var isValid bool
-	isValid = updateUserLastSeenOn(debtor, currentTime)
+	isValid = updateUserLastSeenOn(lender, currentTime)
 	if !isValid {
-		return "failed to update last seen status of debtor", false
+		return "failed to update last seen status of lender", false
 	}
-	for _, debtee := range debtees {
-		isValid = addDebtForIndividual(debtor, debtee, debtAmount, currentTime)
+	for _, borrower := range borrowers {
+		isValid = addDebtForIndividual(lender, borrower, debtAmount, currentTime)
 		if !isValid {
-			log.Printf("FAILED TO ADD TRANSACTION FOR DEBTOR: %s\n", debtor)
+			log.Printf("FAILED TO ADD TRANSACTION FOR LENDER: %s\n", lender)
 			return "failed to add transaction", false
 		}
-		isValid = updateUserLastSeenOn(debtee, currentTime)
+		isValid = updateUserLastSeenOn(borrower, currentTime)
 		if !isValid {
-			return "failed to update last seen status of debtee", false
+			return "failed to update last seen status of borrower", false
 		}
 	}
 	return "", true
@@ -105,7 +105,7 @@ func GetUserDebtAndLoaned(userID string) (*userResponse.UserResponse, bool) {
 
 	var debtAmount sql.NullFloat64
 	err = DB.QueryRow(
-		`SELECT SUM(amount) FROM debt WHERE debtee=$1`, userID).Scan(&debtAmount)
+		`SELECT SUM(amount) FROM debt WHERE borrower=$1`, userID).Scan(&debtAmount)
 	if err != sql.ErrNoRows && err != nil {
 		log.Println("FAILED TO PERFORM INNER JOIN")
 		log.Printf("Error: %s\n", err.Error())
@@ -114,7 +114,7 @@ func GetUserDebtAndLoaned(userID string) (*userResponse.UserResponse, bool) {
 
 	var loanAmount sql.NullFloat64
 	err = DB.QueryRow(
-		`SELECT SUM(amount) FROM debt WHERE debtor=$1`, userID).Scan(&debtAmount)
+		`SELECT SUM(amount) FROM debt WHERE lender=$1`, userID).Scan(&debtAmount)
 	if err != sql.ErrNoRows && err != nil {
 		log.Println("FAILED TO PERFORM INNER JOIN")
 		log.Printf("Error: %s\n", err.Error())
@@ -132,18 +132,18 @@ func GetUserDebtAndLoaned(userID string) (*userResponse.UserResponse, bool) {
 	}, true
 }
 
-func addDebtForIndividual(debtor, debtee string, amount float64, submittedOn time.Time) bool {
+func addDebtForIndividual(lender, borrower string, amount float64, submittedOn time.Time) bool {
 	transactionID := getUniqueTransactionID()
 	_, err := DB.Exec(
-		`INSERT INTO debt(transaction_id, debtor, debtee, amount, submitted_on) VALUES($1, $2, $3, $4, $5)`,
+		`INSERT INTO debt(transaction_id, lender, borrower, amount, submitted_on) VALUES($1, $2, $3, $4, $5)`,
 		transactionID,
-		debtor,
-		debtee,
+		lender,
+		borrower,
 		amount,
 		submittedOn,
 	)
 	if err != nil {
-		log.Printf("FAILED TO INSERT DEBT OF AMOUNT: %f, DEBTOR: %s, DEBTEE: %s, error: %s", amount, debtor, debtee, err.Error())
+		log.Printf("FAILED TO INSERT DEBT OF AMOUNT: %f, LENDER: %s, BORROWER: %s, ERROR: %s", amount, lender, borrower, err.Error())
 		return false
 	}
 	return true
@@ -225,8 +225,8 @@ func createDebtTable() {
 	_, err := DB.Exec(`
 	CREATE TABLE IF NOT EXISTS debt(
 		transaction_id VARCHAR(36) PRIMARY KEY,
-		debtor VARCHAR(36) NOT NULL REFERENCES service_user(service_user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-		debtee VARCHAR(36) NOT NULL REFERENCES service_user(service_user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+		lender VARCHAR(36) NOT NULL REFERENCES service_user(service_user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+		borrower VARCHAR(36) NOT NULL REFERENCES service_user(service_user_id) ON DELETE CASCADE ON UPDATE CASCADE,
 		amount NUMERIC,
 		submitted_on TIMESTAMP
 	)`)
