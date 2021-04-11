@@ -68,8 +68,8 @@ func createUserTable() {
 			service_user_id VARCHAR(36) PRIMARY KEY,
 			name TEXT NOT NULL,
 			password TEXT NOT NULL,
-			phone TEXT NOT NULL,
-			email TEXT NOT NULL,
+			phone TEXT NOT NULL UNIQUE,
+			email TEXT NOT NULL UNIQUE,
 			registered_on TIMESTAMP,
 			last_active_on TIMESTAMP
 		)`)

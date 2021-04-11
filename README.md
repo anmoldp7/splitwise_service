@@ -34,4 +34,3 @@ Also ensure that values are correctly setup in config file for connection with p
 - Add use case diagram, UML diagram, activity diagram and sequence diagram.
 - Implement endpoint to clear dues between 2 users.
 - Bulk insert transaction in case amount is to be paid by group to lender.
-- Add validation for email and phone number via regex and enforcing unique constraint for these attributes.

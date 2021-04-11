@@ -18,7 +18,13 @@ func AddUser(name, password, phone, email string) (string, bool) {
 		log.Println("password encryption failed")
 		return err.Error(), false
 	}
-	userID := getUniqueUserID()
+
+	userID, isValid := validateCredentialsAndGetUniqueUserID(email, phone)
+	if !isValid {
+		log.Println("failed to add user, email or phone already registered")
+		return "failed to add user, email or phone already registered", false
+	}
+
 	_, err = db.DB.Exec(
 		`INSERT INTO service_user(service_user_id, name, password, phone, email, registered_on, last_active_on) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		userID,
@@ -143,14 +149,19 @@ func addDebtForIndividual(lender, borrower string, amount float64, submittedOn t
 	return true
 }
 
-func getUniqueUserID() string {
+func validateCredentialsAndGetUniqueUserID(email, phone string) (string, bool) {
+	isCredentialValid := !db.RowExists(`SELECT service_user_id FROM service_user WHERE email=$1 OR phone=$2`, email, phone)
+	if !isCredentialValid {
+		return "", false
+	}
+
 	var isValidID = false
 	var userID string
 	for !isValidID {
 		userID = uuid.NewV4().String()
 		isValidID = !db.RowExists(`SELECT service_user_id FROM service_user WHERE service_user_id=$1`, userID)
 	}
-	return userID
+	return userID, true
 }
 
 func getUniqueTransactionID() string {
