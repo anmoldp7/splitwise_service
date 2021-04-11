@@ -34,3 +34,6 @@ Also ensure that values are correctly setup in config file for connection with p
 - Add use case diagram, UML diagram, activity diagram and sequence diagram.
 - Implement endpoint to clear dues between 2 users.
 - Bulk insert transaction in case amount is to be paid by group to lender.
+- Make the service thread safe.
+- Improve latency by implementing write through cache via redis.
+- Add support for percentage.
